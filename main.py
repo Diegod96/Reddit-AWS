@@ -40,6 +40,8 @@ def clean_submission(submission):
 
 
 def clean_comment(comment):
+    """
+    """
     try:
         name = comment.author.name
     except:
@@ -70,8 +72,9 @@ def initialize_reddit_app():
     return reddit
 
 
-def subreddit_type_submissions(kind="hot", sub="writing"):
-    data = []
+def subreddit_type_submissions(sub="writing", kind="hot"):
+    comments = []
+    articles = []
     red = initialize_reddit_app()
     subreddit = red.subreddit(sub)
 
@@ -82,36 +85,36 @@ def subreddit_type_submissions(kind="hot", sub="writing"):
     elif kind == "new":
         submissions = subreddit.new()
     elif kind == "random_rising":
-        submissions = subreddit.new()
+        submissions = subreddit.random_rising()
     else:
         submissions = subreddit.random()
 
     for submission in submissions:
-        comments = []
         article = clean_submission(submission)
         article['subreddit'] = sub
+        articles.append(article)
 
         for top_level_comment in submission.comments:
-            if isinstance(top_level_comment, MoreComments):
-                continue
+            # if isinstance(top_level_comment, MoreComments):
+            #     continue
             comment = clean_comment(top_level_comment)
+            comment['article_id'] = article['id']
             comments.append(comment)
 
-        article['comments'] = comments
-        data.append(article)
-    return data
+    return articles, comments
 
 
 def data_for_subreddit(sub, kind=None):
-    data = []
-    themes = kind or ["hot", "new", "random_rising", "top"]
-    for kind in themes:
-        print("Pulling posts from {}, {}".format(sub, kind))
-        data += subreddit_type_submissions(kind, sub)
-    return data
+    # data = []
+    themes = kind or "hot"
+    # for kind in themes:
+    print("Pulling posts from {}, {}".format(sub, kind))
+    articles, comments = subreddit_type_submissions(sub, kind)
+    return articles, comments
 
 
 if __name__ == '__main__':
     assert PRAW_KEY is not None
-    data = data_for_subreddit("newjersey", ['new'])
-    print(data)
+    articles, comments = data_for_subreddit("newjersey", 'new')
+    print(articles)
+    print(comments)
