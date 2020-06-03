@@ -1,5 +1,6 @@
 package
 config.py
+lambda/
 env/
 __pycache__
 .csv
